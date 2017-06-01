@@ -6,11 +6,11 @@ define([
   ],
   function(Chess, $, ChessBoard, SumnersChessAi) {
     let game = new Chess();
-    let chessAi = new SumnersChessAi();
+    let chessAi = new SumnersChessAi(game.BLACK);
 
     // Styling Squares ======================================================
-    let removeGreySquares = () => $('#board .square-55d63').css('background',
-      '');
+    let removeGreySquares = () =>
+      $('#board .square-55d63').css('background', '');
 
     let greySquare = (square) => {
       let squareEl = $('#board .square-' + square);

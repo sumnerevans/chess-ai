@@ -1,59 +1,77 @@
-define(['lib/js-utils/Array'], () => class SumnersChessAi {
-  constructor(colour) {
-    this._pieceValues = {
-      'p': 1,
-      'n': 3,
-      'b': 3,
-      'r': 5,
-      'q': 9,
-      'k': 1,
-    };
+define(['lib/js-utils/Array', 'lib/chess'],
+  (array, Chess) => class SumnersChessAi {
+    constructor(colour) {
+      this._pieceValues = {
+        'p': 1,
+        'n': 3,
+        'b': 3,
+        'r': 5,
+        'q': 9,
+        'k': 1,
+      };
 
-    this._gamePhases = ['opening', 'midlegame', 'endgame'];
-    this._gamePhase = 0;
-    this._depth = 1;
-    this._colour = colour;
-  }
+      this._gamePhases = ['opening', 'midlegame', 'endgame'];
+      this._gamePhase = 0;
+      this._depth = 2;
+      this._colour = colour;
+    }
 
-  makeMove(game) {
-    game.ugly_move(this.calculateBestMove(game));
-  }
+    makeMove(game) {
+      let move = this.calculateBestMove(game, this._depth, false)[0];
+      game.ugly_move(move);
+    }
 
-  calculateBestMove(game) {
-    let moves = game.ugly_moves();
+    calculateBestMove(game, depth, calculatingOpponent) {
+      let moves = game.ugly_moves();
+      if (moves.length <= 0) {
+        return;
+      }
 
-    let move = moves.max(m => {
-      game.ugly_move(m);
-      let movePositionValue = this.evaluatePosition(game);
-      game.undo();
+      let minMax = null;
+      if (this._colour === Chess.WHITE) {
+        minMax = calculatingOpponent ? 'min' : 'max';
+      } else {
+        minMax = calculatingOpponent ? 'max' : 'min';
+      }
 
-      return movePositionValue * (this._colour === 'b' ? -1 : 1);
-    });
+      let [move, movePositionValue] = moves[minMax](move => {
+        game.ugly_move(move);
+        let movePositionValue = null;
 
-    console.log(move);
+        if (depth <= 0) {
+          movePositionValue = this.evaluatePosition(game);
+        } else {
+          movePositionValue = this.calculateBestMove(game,
+            depth - 1, !calculatingOpponent)[1] || 0;
+        }
 
-    return move;
-  }
+        game.undo();
+        return movePositionValue;
+      });
 
-  evaluatePosition(game) {
-    let positionValue = 0;
+      return [move, movePositionValue];
+    }
 
-    for (let row of game.board()) {
-      for (let col of row) {
-        if (col !== null) {
-          if (col._colour === 'w') {
-            positionValue += this.getPieceValue(col.type);
-          } else {
-            positionValue -= this.getPieceValue(col.type);
+    evaluatePosition(game) {
+      let positionValue = 0;
+
+      for (let row of game.board()) {
+        for (let col of row) {
+          if (col !== null) {
+            if (col.color === game.WHITE) {
+              positionValue += this.getPieceValue(col.type);
+            } else {
+              positionValue -= this.getPieceValue(col.type);
+            }
           }
         }
       }
+
+      return positionValue;
     }
 
-    return positionValue;
+    getPieceValue(piece, rank, file) {
+      return this._pieceValues[piece];
+    }
   }
-
-  getPieceValue(piece, rank, file) {
-    return this._pieceValues[piece];
-  }
-});
+);

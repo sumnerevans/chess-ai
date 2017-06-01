@@ -1,3 +1,3 @@
-[submodule "lib/js-utils"]
-	path = lib/js-utils
+[submodule "src/lib/js-utils"]
+	path = src/lib/js-utils
 	url = git@github.com:sumnerevans/js-utils.git

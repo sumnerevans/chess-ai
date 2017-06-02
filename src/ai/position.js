@@ -1,5 +1,8 @@
-define([], function() {
+define(['lib/chess'], function() {
   let positionsEvaluated = 0;
+  let gamePhases = ['opening', 'midlegame', 'endgame'];
+  let gamePhase = 'opening';
+
   let pieceValues = {
     'p': 1,
     'n': 3,

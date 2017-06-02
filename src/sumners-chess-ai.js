@@ -1,16 +1,15 @@
 define(['lib/js-utils/Array', 'lib/chess', 'ai/position'],
   (array, Chess, Position) => class SumnersChessAi {
     constructor(colour) {
-      this._gamePhases = ['opening', 'midlegame', 'endgame'];
-      this._gamePhase = 0;
-      this._depth = 3;
+      this._depth = 2;
       this._colour = colour;
     }
 
     makeMove(game) {
       let move = this.calculateBestMove(game, this._depth, false)[0];
       game.ugly_move(move);
-      console.log(`Evaluated ${Position.getPositionsEvaluated()} positions.`);
+      console.log(
+        `Evaluated ${Position.getPositionsEvaluated()} positions.`);
       Position.resetPositionsEvaluated();
     }
 
@@ -33,7 +32,9 @@ define(['lib/js-utils/Array', 'lib/chess', 'ai/position'],
         let positionValue = 0;
 
         if (game.in_checkmate()) {
-          positionValue = 1000;
+          // This seems backwards, but if it's white't turn and they are in
+          // checkmate, it's bad.
+          positionValue = game.turn() === 'w' ? -1000 : 1000;
         } else if (game.in_draw()) {
           // TODO: make smarter
           positionValue = 0;
@@ -42,7 +43,7 @@ define(['lib/js-utils/Array', 'lib/chess', 'ai/position'],
             positionValue = Position.evaluate(game);
           } else {
             positionValue = this.calculateBestMove(game,
-              depth - 1, !calculatingOpponent)[0];
+              depth - 1, !calculatingOpponent)[1];
           }
         }
 

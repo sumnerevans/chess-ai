@@ -22,7 +22,7 @@ describe('SumnersChessAi', function() {
       for (let position of checkmate_in_one_situations) {
         let game = Chess(position);
         ai.makeMove(game);
-        assert(game.in_checkmate() && game.game_over());
+        assert(game.in_checkmate());
       }
     });
 
@@ -37,7 +37,7 @@ describe('SumnersChessAi', function() {
         for (let m of game.ugly_moves()) {
           game.ugly_move(m);
           ai.makeMove(game);
-          assert(game.in_checkmate() && game.game_over());
+          assert(game.in_checkmate());
           game.undo();
           game.undo();
         }
@@ -58,7 +58,7 @@ describe('SumnersChessAi', function() {
           for (let m2 of game.ugly_moves()) {
             game.ugly_move(m2);
             ai.makeMove(game);
-            assert(game.in_checkmate() && game.game_over());
+            assert(game.in_checkmate());
             game.undo();
             game.undo();
           }
@@ -71,7 +71,7 @@ describe('SumnersChessAi', function() {
     it('should prevent checkmate in one', function() {
       let immenent_checkmate_situations = [
         'rk6/7Q/2P5/8/8/8/6PK/8 b - - 0 1',
-        // '8/8/8/7q/8/3k4/8/4K3 b - - 0 1',
+        'k7/7R/r7/8/8/6R1/6PK/8 b - - 0 1',
       ];
 
       for (let position of immenent_checkmate_situations) {
@@ -84,5 +84,23 @@ describe('SumnersChessAi', function() {
         }
       }
     });
+
+    it('should prevent checkmate in two', function() {
+      let immenent_checkmate_situations = [
+        '5rk1/1p6/p1n1rPp1/2p5/2P1p2R/1P2P2P/PBq3P1/5RK1 b - - 0 1',
+        'r2Nk2r/ppp5/3p1n2/2b1p3/2B1p1b1/3P2pP/PPPQnPP1/RN3R1K b - - 0 1',
+      ];
+
+      for (let position of immenent_checkmate_situations) {
+        let game = Chess(position);
+        ai.makeMove(game);
+        for (let m of game.ugly_moves()) {
+          game.ugly_move(m);
+          assert(!game.in_checkmate());
+          game.undo();
+        }
+      }
+    });
+
   });
 });

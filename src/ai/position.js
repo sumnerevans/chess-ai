@@ -16,9 +16,18 @@ define([], function() {
     return pieceValues[piece];
   };
 
-  let evaluate = (game) => {
+  let evaluate = (game, depth) => {
     let positionValue = 0;
     positionsEvaluated++;
+
+    if (game.in_checkmate()) {
+      // This seems backwards, but if it's white's turn and they are in
+      // checkmate, it's bad.
+      positionValue = game.turn() === 'w' ? -9999 - depth : 9999 + depth;
+    } else if (game.in_draw()) {
+      // TODO: make smarter
+      positionValue = 0;
+    }
 
     for (let row of game.board()) {
       for (let col of row) {

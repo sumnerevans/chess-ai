@@ -3,6 +3,8 @@ define(['lib/js-utils/Array', 'lib/chess', 'ai/position'],
     constructor(colour) {
       this._depth = 3;
       this._colour = colour;
+      this._bestMoveCache = {};
+      this._usedCache = 0;
     }
 
     makeMove(game) {
@@ -10,7 +12,12 @@ define(['lib/js-utils/Array', 'lib/chess', 'ai/position'],
       game.ugly_move(bestMove);
       console.log(
         `Evaluated ${Position.getPositionsEvaluated()} positions.`);
+      console.log(
+        `Used evaluation cache ${Position.getCacheUsed()} times.`);
+      console.log(`Used best move cache ${this._usedCache} times.`);
+      this._usedCache = 0;
       Position.resetPositionsEvaluated();
+      Position.resetCacheUsed();
     }
 
     calculateBestMove(game, depth, calculatingOpponent) {
@@ -29,16 +36,24 @@ define(['lib/js-utils/Array', 'lib/chess', 'ai/position'],
         let value = this.doCalculateBestMove(
           game, depth - 1, -10000, 10000, !calculatingOpponent);
         game.undo();
+        console.log(value, move);
         return value;
       });
     }
 
     doCalculateBestMove(game, depth, alpha, beta, calculatingOpponent) {
-      if (depth === 0 || game.game_over()) {
-        return Position.evaluate(game, depth);
+      let cachedMove = this._bestMoveCache[[game.fen(), depth]];
+      if (cachedMove) {
+        this._usedCache++;
+        return cachedMove;
       }
 
-      let moves = game.ugly_moves();
+      let positionValue = Position.evaluate(game, depth);
+
+      if (depth === 0 || game.game_over()) {
+        this._bestMoveCache[[game.fen(), depth]] = positionValue;
+        return positionValue;
+      }
 
       // Maximize the position for whoever we are evaluating for.
       let minMax;
@@ -50,7 +65,7 @@ define(['lib/js-utils/Array', 'lib/chess', 'ai/position'],
 
       let bestMove = minMax === 'max' ? -9999 : 9999;
 
-      for (let move of moves) {
+      for (let move of game.ugly_moves()) {
         game.ugly_move(move);
 
         let calculatedBestMove = this.doCalculateBestMove(game, depth - 1,
@@ -72,6 +87,8 @@ define(['lib/js-utils/Array', 'lib/chess', 'ai/position'],
           }
         }
       }
+
+      this._bestMoveCache[[game.fen(), depth]] = bestMove;
 
       return bestMove;
     }

@@ -25,7 +25,6 @@ define([
 
     let renderMoveHistory = (moves) => {
       let historyElement = $('#move-history').empty();
-      historyElement.empty();
       for (var i = 0; i < moves.length; i = i + 2) {
         historyElement.append('<span>' + moves[i] + ' ' + (moves[i + 1] ?
           moves[i + 1] : ' ') + '</span><br>');
@@ -98,4 +97,6 @@ define([
 
       onSnapEnd: () => board.position(game.fen()),
     });
+
+    $(window).resize(board.resize);
   });
